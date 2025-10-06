@@ -9,9 +9,9 @@ resource "aws_s3_bucket" "vault_license_bucket" {
   bucket_prefix = "${var.resource_name_prefix}-vault-license"
   acl           = "private"
 
-  versioning {
-    enabled = true
-  }
+  # versioning {
+  #   enabled = true
+  # }
 
   server_side_encryption_configuration {
     rule {
@@ -25,6 +25,13 @@ resource "aws_s3_bucket" "vault_license_bucket" {
   force_destroy = true
 
   tags = var.common_tags
+}
+
+resource "aws_s3_bucket_versioning" "vault_bucket_versioning" {
+  bucket = aws_s3_bucket.vault_license_bucket.id
+  versioning_configuration {
+    status = "Enabled"
+  }
 }
 
 resource "aws_s3_bucket_public_access_block" "vault_license_bucket" {
