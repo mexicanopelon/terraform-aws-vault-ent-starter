@@ -9,10 +9,6 @@ resource "aws_s3_bucket" "vault_license_bucket" {
   bucket_prefix = "${var.resource_name_prefix}-vault-license"
   acl           = "private"
 
-  # versioning {
-  #   enabled = true
-  # }
-
   server_side_encryption_configuration {
     rule {
       apply_server_side_encryption_by_default {
@@ -27,8 +23,10 @@ resource "aws_s3_bucket" "vault_license_bucket" {
   tags = var.common_tags
 }
 
-resource "aws_s3_bucket_versioning" "vault_bucket_versioning" {
+# New dedicated resource for versioning configuration
+resource "aws_s3_bucket_versioning" "vault_license_bucket_versioning" {
   bucket = aws_s3_bucket.vault_license_bucket.id
+
   versioning_configuration {
     status = "Enabled"
   }
@@ -50,3 +48,4 @@ resource "aws_s3_bucket_object" "vault_license" {
 
   tags = var.common_tags
 }
+
