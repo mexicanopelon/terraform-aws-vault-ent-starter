@@ -9,21 +9,13 @@ resource "aws_s3_bucket" "vault_license_bucket" {
   bucket_prefix = "${var.resource_name_prefix}-vault-license"
   acl           = "private"
 
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        kms_master_key_id = var.kms_key_arn
-        sse_algorithm     = "aws:kms"
-      }
-    }
-  }
-
   force_destroy = true
 
   tags = var.common_tags
 }
 
-# New dedicated resource for versioning configuration
+
+# Versioning configuration (moved out of aws_s3_bucket)
 resource "aws_s3_bucket_versioning" "vault_license_bucket_versioning" {
   bucket = aws_s3_bucket.vault_license_bucket.id
 
@@ -32,6 +24,19 @@ resource "aws_s3_bucket_versioning" "vault_license_bucket_versioning" {
   }
 }
 
+# Server-side encryption configuration (moved out of aws_s3_bucket)
+resource "aws_s3_bucket_server_side_encryption_configuration" "vault_license_bucket_encryption" {
+  bucket = aws_s3_bucket.vault_license_bucket.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = var.kms_key_arn
+      sse_algorithm     = "aws:kms"
+    }
+  }
+}
+
+# Public access block configuration
 resource "aws_s3_bucket_public_access_block" "vault_license_bucket" {
   bucket = aws_s3_bucket.vault_license_bucket.id
 
@@ -41,6 +46,7 @@ resource "aws_s3_bucket_public_access_block" "vault_license_bucket" {
   ignore_public_acls      = true
 }
 
+# Upload license object to S3
 resource "aws_s3_bucket_object" "vault_license" {
   bucket = aws_s3_bucket.vault_license_bucket.id
   key    = var.vault_license_name
